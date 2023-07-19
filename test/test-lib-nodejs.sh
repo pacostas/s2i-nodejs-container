@@ -151,6 +151,9 @@ prepare() {
 }
 
 run_test_application() {
+  echo "this is run_test_application start"
+  echo $2
+  echo "this is run_test_application end"
   case "$1" in
     app|hw|express-webapp|binary)
       cid_file=$CID_FILE_DIR/$(mktemp -u -p . --suffix=.cid)
@@ -294,16 +297,20 @@ test_dev_mode() {
   local app=$1
   local dev_mode=$2
   local node_env=$3
+  local init_wrapper=$4
 
   echo "Testing $app DEV_MODE=$dev_mode NODE_ENV=$node_env"
 
-  run_test_application $app "-e DEV_MODE=$dev_mode"
+  run_test_application $app "-e INIT_WRAPPER=$dev_mode"
   wait_for_cid
 
   test_connection
   ct_check_testcase_result $?
 
   logs=$(container_logs)
+  echo "*******logs-start***********"
+  echo ${logs} 
+  echo "*******logs-end***********"
   echo ${logs} | grep -q DEV_MODE=$dev_mode
   ct_check_testcase_result $?
   echo ${logs} | grep -q DEBUG_PORT=5858
@@ -313,6 +320,32 @@ test_dev_mode() {
 
   kill_test_application
 }
+
+# test_init_wrapper() {
+#   local app=$1
+#   local dev_mode=$2
+#   local node_env=$3
+#   local init_wrapper=$4
+
+#   run_test_application $app "-e DEV_MODE=$dev_mode -e NODE_ENV=$node_env -e INIT_WRAPPER=$init_wrapper"
+#   wait_for_cid
+
+#   test_connection
+#   ct_check_testcase_result $?
+
+#   logs=$(container_logs)
+#   echo "*******logs-start***********"
+#   echo ${logs} 
+#   echo "*******logs-end***********"
+#   echo ${logs} | grep -q DEV_MODE=$dev_mode
+#   ct_check_testcase_result $?
+#   echo ${logs} | grep -q DEBUG_PORT=5858
+#   ct_check_testcase_result $?
+#   echo ${logs} | grep -q NODE_ENV=$node_env
+#   ct_check_testcase_result $?
+
+#   kill_test_application
+# }
 
 test_incremental_build() {
   npm_variables=$(ct_build_s2i_npm_variables)
@@ -469,14 +502,24 @@ function test_npm_tmp_cleared() {
   ct_check_testcase_result "$?"
 }
 
+# function test_dev_mode_false_production() {
+#   # DEV_MODE=false NODE_ENV=production
+#   test_dev_mode app false production
+# }
+
 function test_dev_mode_false_production() {
   # DEV_MODE=false NODE_ENV=production
-  test_dev_mode app false production
+  test_dev_mode app false production true
 }
 
 function test_dev_mode_true_development() {
   # DEV_MODE=true NODE_ENV=development
   test_dev_mode app true development
+}
+
+function test_init_wrapper_false_development_true() {
+  # DEV_MODE=true NODE_ENV=development INIT_WRAPPER=true
+  test_init_wrapper app false development true
 }
 
 function test_dev_mode_false_development() {

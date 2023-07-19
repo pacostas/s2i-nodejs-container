@@ -16,7 +16,7 @@ fi
 # Runs the nodejs application server. If the container is run in development mode,
 # hot deploy and debugging are enabled.
 run_node() {
-  echo -e "Environment: \n\tDEV_MODE=${DEV_MODE}\n\tNODE_ENV=${NODE_ENV}\n\tDEBUG_PORT=${DEBUG_PORT}"
+  echo -e "Environment: \n\tDEV_MODE=${DEV_MODE}\n\tNODE_ENV=${NODE_ENV}\n\tDEBUG_PORT=${DEBUG_PORT}\n\INIT_WRAPPER=${INIT_WRAPPER}"
   if [ "$DEV_MODE" == true ]; then
     echo "Launching via nodemon..."
     exec nodemon --inspect="$DEBUG_PORT"
